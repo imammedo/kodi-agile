@@ -558,7 +558,9 @@ void CGUIDialogAddonSettings::UpdateFromControls()
 void CGUIDialogAddonSettings::SaveSettings(void)
 {
   UpdateFromControls();
-  m_addon->UpdateSettings(m_settings);
+
+  for (std::map<std::string, std::string>::iterator i = m_settings.begin(); i != m_settings.end(); ++i)
+    m_addon->UpdateSetting(i->first, i->second);
 
   if (m_saveToDisk)
   { 

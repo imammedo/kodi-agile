@@ -160,7 +160,7 @@ typedef struct AddonToKodiFuncTable_Addon
  */
 typedef struct KodiToAddonFuncTable_Addon
 {
-  ADDON_STATUS (*set_setting)(const char *settingName, const void *settingValue, bool lastSetting);
+  void* dummy;
 } KodiToAddonFuncTable_Addon;
 
 /*
@@ -195,8 +195,6 @@ typedef struct AddonGlobalInterface
   // Set from addon header!
   KodiToAddonFuncTable_Addon toAddon;
 } AddonGlobalInterface;
-
-} /* extern "C" */
 
 namespace kodi {
 namespace addon {
@@ -258,21 +256,6 @@ namespace addon {
   //
   //=-----=------=------=------=------=------=------=------=------=------=-----=
 
-  class CSettingValue
-  {
-  public:
-    CSettingValue(const void *settingValue) : m_settingValue(settingValue) {}
-
-    bool empty() const { return (m_settingValue == nullptr) ? true : false; }
-    std::string GetString() const { return (char*)m_settingValue; }
-    int GetInt() const { return *(int*)m_settingValue; }
-    unsigned int GetUInt() const { return *(unsigned int*)m_settingValue; }
-    bool GetBool() const { return *(bool*)m_settingValue; }
-    float GetFloat() const { return *(float*)m_settingValue; }
-
-  private:
-    const void *m_settingValue;
-  };
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
   // Function used on Kodi itself to transfer back from add-on given data with
@@ -313,7 +296,6 @@ namespace addon {
   public:
     CAddonBase()
     {
-      CAddonBase::m_interface->toAddon.set_setting = ADDONBASE_SetSetting;
     }
 
     virtual ~CAddonBase()
@@ -328,7 +310,7 @@ namespace addon {
 
     virtual bool GetSettings(std::vector<CAddonSetting>& settings) { return false; }
 
-    virtual ADDON_STATUS SetSetting(const std::string& settingName, const CSettingValue& settingValue, bool lastSetting) { return ADDON_STATUS_UNKNOWN; }
+    virtual ADDON_STATUS SetSetting(const std::string& settingName, const void *settingValue) { return ADDON_STATUS_UNKNOWN; }
 
     virtual ADDON_STATUS CreateInstance(int instanceType, std::string instanceID, KODI_HANDLE instance, KODI_HANDLE& addonInstance)
     {
@@ -407,9 +389,10 @@ namespace addon {
       return 0;
     }
 
-    static inline ADDON_STATUS ADDONBASE_SetSetting(const char *settingName, const void *settingValue, bool lastSetting)
+    static inline ADDON_STATUS ADDONBASE_SetSetting(const char *settingName, const void *settingValue)
     {
-      return CAddonBase::m_interface->addonBase->SetSetting(settingName, CSettingValue(settingValue), lastSetting);
+      std::string name = settingName;
+      return CAddonBase::m_interface->addonBase->SetSetting(name, settingValue);
     }
 
     static inline void ADDONBASE_FreeSettings(unsigned int elements, ADDON_StructSetting*** set)
@@ -514,6 +497,7 @@ inline void Log(const AddonLog loglevel, const char* format, ...)
 } /* namespace kodi */
 //------------------------------------------------------------------------------
 
+} /* extern "C" */
 
 
 /*! addon creation macro
@@ -552,7 +536,10 @@ inline void Log(const AddonLog loglevel, const char* format, ...)
   { \
     kodi::addon::CAddonBase::ADDONBASE_FreeSettings(0, nullptr); /* Currently bad but becomes soon changed! */ \
   } \
-  extern "C" __declspec(dllexport) ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue) { return ADDON_STATUS_OK; } \
+  extern "C" __declspec(dllexport) ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue) \
+  { \
+    return kodi::addon::CAddonBase::ADDONBASE_SetSetting(settingName, settingValue); \
+  } \
   extern "C" __declspec(dllexport) const char* ADDON_GetTypeVersion(int type) \
   { \
     return kodi::addon::GetTypeVersion(type); \

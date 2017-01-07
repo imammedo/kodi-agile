@@ -39,7 +39,6 @@ extern "C"
 typedef struct AddonToKodiFuncTable_kodi
 {
   bool (*get_setting)(void* kodiBase, const char* settingName, void *settingValue);
-  bool (*set_setting)(void* kodiBase, const char* settingName, const char* settingValue);
   void (*open_settings_dialog)(void* kodiBase);
 } AddonToKodiFuncTable_kodi;
 
@@ -73,14 +72,6 @@ namespace kodi
 
   //============================================================================
   ///
-  inline void SetSettingString(const std::string& settingName, const std::string& settingValue)
-  {
-    ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->set_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), settingValue.c_str());
-  }
-  //----------------------------------------------------------------------------
-
-  //============================================================================
-  ///
   inline bool CheckSettingInt(const std::string& settingName, int& settingValue)
   {
     return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->get_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), &settingValue);
@@ -99,11 +90,19 @@ namespace kodi
 
   //============================================================================
   ///
-  inline void SetSettingInt(const std::string& settingName, int settingValue)
+  inline bool CheckSettingUInt(const std::string& settingName, unsigned int& settingValue)
   {
-    char buffer[33];
-    snprintf(buffer, sizeof(buffer), "%i", settingValue);
-    ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->set_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), buffer);
+    return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->get_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), &settingValue);
+  }
+  //----------------------------------------------------------------------------
+
+  //============================================================================
+  ///
+  inline unsigned int GetSettingUInt(const std::string& settingName)
+  {
+    unsigned int settingValue = 0;
+    CheckSettingUInt(settingName, settingValue);
+    return settingValue;
   }
   //----------------------------------------------------------------------------
 
@@ -127,14 +126,6 @@ namespace kodi
 
   //============================================================================
   ///
-  inline void SetSettingBoolean(const std::string& settingName, bool settingValue)
-  {
-    ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->set_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), settingValue ? "true" : "false");
-  }
-  //----------------------------------------------------------------------------
-
-  //============================================================================
-  ///
   inline bool CheckSettingFloat(const std::string& settingName, float& settingValue)
   {
     return ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->get_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), &settingValue);
@@ -148,16 +139,6 @@ namespace kodi
     float settingValue = 0.0f;
     CheckSettingFloat(settingName, settingValue);
     return settingValue;
-  }
-  //----------------------------------------------------------------------------
-
-  //============================================================================
-  ///
-  inline void SetSettingFloat(const std::string& settingName, float settingValue)
-  {
-    char buffer[50];
-    snprintf(buffer, sizeof(buffer), "%f", settingValue);
-    ::kodi::addon::CAddonBase::m_interface->toKodi.kodi->set_setting(::kodi::addon::CAddonBase::m_interface->toKodi.kodiBase, settingName.c_str(), buffer);
   }
   //----------------------------------------------------------------------------
 
