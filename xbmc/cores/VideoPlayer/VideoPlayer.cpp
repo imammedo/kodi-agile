@@ -545,6 +545,7 @@ void CSelectionStreams::Update(CDVDInputStream* input, CDVDDemux* demuxer, std::
           s.name += type;
         }
         s.channels = ((CDemuxStreamAudio*)stream)->iChannels;
+        s.bitrate = ((CDemuxStreamAudio*)stream)->iBitRate;
       }
       Update(s);
     }
@@ -3431,7 +3432,6 @@ void CVideoPlayer::UpdateStreamInfos()
   if (streamId >= 0 && streamId < GetVideoStreamCount())
   {
     SelectionStream& s = m_SelectionStreams.Get(STREAM_VIDEO, streamId);
-    s.bitrate = m_VideoPlayerVideo->GetVideoBitrate();
     s.aspect_ratio = m_renderManager.GetAspectRatio();
     CRect viewRect;
     m_renderManager.GetVideoRect(s.SrcRect, s.DestRect, viewRect);
@@ -3465,13 +3465,13 @@ void CVideoPlayer::UpdateStreamInfos()
   if (streamId >= 0 && streamId < GetAudioStreamCount())
   {
     SelectionStream& s = m_SelectionStreams.Get(STREAM_AUDIO, streamId);
-    s.bitrate = m_VideoPlayerAudio->GetAudioBitrate();
     s.channels = m_VideoPlayerAudio->GetAudioChannels();
 
     CDemuxStream* stream = m_pDemuxer->GetStream(m_CurrentAudio.demuxerId, m_CurrentAudio.id);
     if (stream && stream->type == STREAM_AUDIO)
     {
       s.codec = m_pDemuxer->GetStreamCodecName(stream->demuxerId, stream->uniqueId);
+      s.bitrate = ((CDemuxStreamAudio*)stream)->iBitRate;
     }
   }
 }
@@ -3735,7 +3735,7 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
       return false;
 
     stream = m_pDemuxer->GetStream(demuxerId, iStream);
-    if(!stream || stream->disabled)
+    if (!stream || stream->disabled)
       return false;
 
     m_pDemuxer->EnableStream(demuxerId, iStream, true);

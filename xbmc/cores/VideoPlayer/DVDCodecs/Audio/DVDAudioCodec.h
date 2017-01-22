@@ -54,7 +54,7 @@ typedef struct stDVDAudioFrame
   AEAudioFormat audioFormat;
   enum AVAudioServiceType audio_service_type;
   enum AVMatrixEncoding matrix_encoding;
-  int               profile;
+  int profile;
 } DVDAudioFrame;
 
 class CDVDAudioCodec
