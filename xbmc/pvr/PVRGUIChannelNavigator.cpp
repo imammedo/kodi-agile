@@ -83,7 +83,7 @@ namespace PVR
 
   void CPVRGUIChannelNavigator::SelectChannel(const CPVRChannelPtr channel, ChannelSwitchMode eSwitchMode)
   {
-    g_infoManager.SetCurrentItem(CFileItem(channel));
+    g_infoManager.SetCurrentItem(CFileItemPtr(new CFileItem(channel)));
 
     CSingleLock lock(m_critSection);
     m_currentChannel = channel;
@@ -186,7 +186,7 @@ namespace PVR
     }
 
     if (item)
-      g_infoManager.SetCurrentItem(*item);
+      g_infoManager.SetCurrentItem(item);
   }
 
   void CPVRGUIChannelNavigator::ToggleInfo()
@@ -212,7 +212,7 @@ namespace PVR
     }
 
     if (item)
-      g_infoManager.SetCurrentItem(*item);
+      g_infoManager.SetCurrentItem(item);
 
     ShowInfo(false);
   }
