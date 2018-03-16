@@ -2224,6 +2224,11 @@ void CFileItemList::Sort(SortBy sortBy, SortOrder sortOrder, SortAttribute sortA
   m_sortDescription = sorting;
 }
 
+static bool video_playcount_asc(const CFileItemPtr &pItem1, const CFileItemPtr &pItem2)
+{
+  return pItem1->GetVideoInfoTag()->GetPlayCount() < pItem2->GetVideoInfoTag()->GetPlayCount();
+}
+
 void CFileItemList::Sort(SortDescription sortDescription)
 {
   if (sortDescription.sortBy == SortByFile ||
@@ -2259,6 +2264,7 @@ void CFileItemList::Sort(SortDescription sortDescription)
   // apply the new order to the existing CFileItems
   VECFILEITEMS sortedFileItems;
   sortedFileItems.reserve(Size());
+  bool has_video_only = true;
   for (SortItems::const_iterator it = sortItems.begin(); it != sortItems.end(); it++)
   {
     CFileItemPtr item = m_items[(int)(*it)->at(FieldId).asInteger()];
@@ -2266,10 +2272,16 @@ void CFileItemList::Sort(SortDescription sortDescription)
     item->SetSortLabel((*it)->at(FieldSort).asWideString());
 
     sortedFileItems.push_back(item);
+    if (has_video_only && !item->IsVideo())
+      has_video_only = false;
   }
 
   // replace the current list with the re-ordered one
   m_items = std::move(sortedFileItems);
+
+  // in Random mode preffer the least played so most played won't be played until all least played are done
+  if (has_video_only && sortDescription.sortBy == SortByRandom)
+    std::stable_sort(m_items.begin(), m_items.end(), video_playcount_asc);
 }
 
 void CFileItemList::Randomize()
