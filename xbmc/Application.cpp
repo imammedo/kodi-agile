@@ -1988,7 +1988,7 @@ bool CApplication::OnAction(const CAction &action)
     {
       m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(userrating);
       // Mirror changes to GUI item
-      g_infoManager.SetCurrentItem(*m_itemCurrentFile);
+      g_infoManager.SetCurrentItem(m_itemCurrentFile);
       
       // Asynchronously update song userrating in music library
       MUSIC_UTILS::UpdateSongRatingJob(m_itemCurrentFile, userrating);
@@ -2017,7 +2017,7 @@ bool CApplication::OnAction(const CAction &action)
     if (needsUpdate)
     {
       // Mirror changes to current GUI item
-      g_infoManager.SetCurrentItem(*m_itemCurrentFile);
+      g_infoManager.SetCurrentItem(m_itemCurrentFile);
 
       // Asynchronously update song userrating in music library
       MUSIC_UTILS::UpdateSongRatingJob(m_itemCurrentFile, m_itemCurrentFile->GetMusicInfoTag()->GetUserrating());
@@ -2046,7 +2046,7 @@ bool CApplication::OnAction(const CAction &action)
     if (needsUpdate)
     {
       // Mirror changes to GUI item
-      g_infoManager.SetCurrentItem(*m_itemCurrentFile);
+      g_infoManager.SetCurrentItem(m_itemCurrentFile);
 
       CVideoDatabase db;
       if (db.Open())
@@ -3875,7 +3875,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
         if (m_itemCurrentFile->IsSamePath(item.get()))
         {
           m_itemCurrentFile->UpdateInfo(*item);
-          g_infoManager.SetCurrentItem(*m_itemCurrentFile);
+          g_infoManager.SetCurrentItem(m_itemCurrentFile);
         }
       }
     }
